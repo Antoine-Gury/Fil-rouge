@@ -1,122 +1,54 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { IconButton, Icon as SharedIcon } from './components/ui'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+const navigation = [
+  { to: '/', label: 'Tableau de bord', icon: 'grid', end: true },
+  { to: '/equipements', label: 'Équipements', icon: 'box', end: false },
+  { to: '/incidents', label: 'Incidents', icon: 'alert', end: false },
+  { to: '/utilisateurs', label: 'Utilisateurs', icon: 'users', end: false },
+]
+
+export function AppLayout() {
+  const location = useLocation()
+  const currentPage = navigation.find(({ to, end }) => end ? location.pathname === to : location.pathname.startsWith(to))
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-shell">
+      <aside className="sidebar">
+        <NavLink className="brand" to="/" aria-label="NexusOps, tableau de bord">
+          <span className="brand-mark"><SharedIcon name="box" /></span>
+          <span>Nexus<span className="brand-light">Ops</span></span>
+        </NavLink>
+        <div className="workspace-label">ESPACE DE TRAVAIL</div>
+        <nav className="primary-nav" aria-label="Navigation principale">
+          {navigation.map((page) => (
+            <NavLink
+              key={page.to}
+              end={page.end}
+              className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
+              to={page.to}
+            >
+              <SharedIcon name={page.icon} />
+              <span>{page.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="help-card">
+            <span className="help-icon">?</span>
+            <div><strong>NexusOps</strong><span>Cockpit de supervision</span></div>
+            <SharedIcon name="arrow" />
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      </aside>
+      <main className="main-area">
+        <header className="topbar">
+          <div className="breadcrumbs"><span>NexusOps</span><span>/</span><strong>{currentPage?.label ?? 'Page introuvable'}</strong></div>
+          <div className="topbar-actions"><IconButton name="search" label="Rechercher" /></div>
+        </header>
+        <div className="page-content"><Outlet /></div>
+      </main>
+    </div>
   )
 }
-
-export default App

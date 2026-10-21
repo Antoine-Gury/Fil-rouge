@@ -1,10 +1,25 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { AppLayout } from './App.tsx'
+import Dashboard from './pages/Dashboard'
+import Equipments from './pages/Equipments'
+import Incidents from './pages/Incidents'
+import Users from './pages/Users'
 import './index.css'
-import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="equipements" element={<Equipments />} />
+          <Route path="incidents" element={<Incidents />} />
+          <Route path="utilisateurs" element={<Users />} />
+          <Route path="*" element={<section className="page-content"><h1>Page introuvable</h1><a className="text-link" href="/">Retour au tableau de bord</a></section>} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   </StrictMode>,
 )

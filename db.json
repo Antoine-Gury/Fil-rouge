@@ -1,0 +1,68 @@
+{
+  "equipments": [
+    {
+      "id": 1,
+      "name": "SRV-PAR-01",
+      "type": "Serveur",
+      "site": "Paris",
+      "status": "online"
+    },
+    {
+      "id": 2,
+      "name": "FW-LYO-01",
+      "type": "Firewall",
+      "site": "Lyon",
+      "status": "online"
+    },
+    {
+      "id": 3,
+      "name": "SW-BDX-02",
+      "type": "Switch",
+      "site": "Bordeaux",
+      "status": "offline"
+    }
+  ],
+  "incidents": [
+    {
+      "id": 1,
+      "title": "Perte de connectivité",
+      "severity": "high",
+      "status": "open",
+      "equipmentId": 3
+    },
+    {
+      "id": 2,
+      "title": "Charge CPU élevée",
+      "severity": "medium",
+      "status": "in_progress",
+      "equipmentId": 1
+    },
+    {
+      "title": "zz",
+      "severity": "medium",
+      "status": "open",
+      "equipmentId": 1,
+      "id": 3
+    }
+  ],
+  "users": [
+    {
+      "id": 1,
+      "name": "Alice Martin",
+      "email": "alice@nexusops.local",
+      "role": "admin"
+    },
+    {
+      "id": 2,
+      "name": "Lucas Bernard",
+      "email": "lucas@nexusops.local",
+      "role": "operator"
+    },
+    {
+      "id": 3,
+      "name": "Emma Robert",
+      "email": "emma@nexusops.local",
+      "role": "viewer"
+    }
+  ]
+}

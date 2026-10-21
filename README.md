@@ -1,32 +1,45 @@
-# React + TypeScript + Vite
+# NexusOps
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Cockpit de supervision frontend développé avec React, TypeScript et Vite. Les données sont fournies par une API locale simulée avec `json-server`.
 
-Currently, two official plugins are available:
+## Installation
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## Lancement
+
+Lancer l’API simulée dans un terminal :
+
+```bash
+npm run api
+```
+
+L’API est disponible à `http://localhost:3001`. Les collections utilisées sont `/equipments`, `/incidents` et `/users`.
+
+Dans un second terminal, lancer le frontend :
+
+```bash
+npm run dev
+```
+
+Ouvrir l’URL affichée par Vite (par défaut `http://localhost:5173`).
+
+## Parcours disponibles
+
+- `/` : tableau de bord avec des indicateurs calculés à partir de l’API.
+- `/equipements` : liste des équipements et de leur statut.
+- `/incidents` : liste des incidents et formulaire contrôlé pour en créer un.
+- `/utilisateurs` : liste des utilisateurs, e-mails et rôles.
+
+Les vues affichent un chargement pendant les requêtes, un message explicite et une action de nouvelle tentative en cas d’erreur. Le formulaire d’incident envoie un `POST /incidents` ; json-server conserve la création dans `db.json`.
+
+## Vérifications
+
+```bash
+npm run build
+npm run lint
+```
+
+Le projet ne contient ni backend applicatif, ni authentification réelle, ni base de données.
