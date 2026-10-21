@@ -11,6 +11,8 @@ export interface Equipment {
   status: EquipmentStatus
 }
 
+export type NewEquipment = Omit<Equipment, 'id'>
+
 export interface Incident {
   id: number
   title: string
@@ -27,3 +29,5 @@ export interface User {
   email: string
   role: UserRole
 }
+
+export type NewUser = Omit<User, 'id'>

@@ -2,14 +2,54 @@
   min-height: 100vh;
 }
 
+.metric-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 10px;
+}
+
+.metric-link .metric-card {
+  height: 100%;
+  transition: border-color 150ms ease, transform 150ms ease;
+}
+
+.metric-link:hover .metric-card,
+.metric-link:focus-visible .metric-card {
+  border-color: #7869df;
+  transform: translateY(-2px);
+}
+
+.metric-link:focus-visible {
+  outline: 2px solid #7869df;
+  outline-offset: 3px;
+}
+
 button,
 a,
 input {
   font: inherit;
 }
 
+.entity-form {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+
 button {
   cursor: pointer;
+}
+
+.global-search {
+  border-color: #30323c;
+  color: #e5e5eb;
+  background: #15171d;
 }
 
 .app-shell {
@@ -258,9 +298,34 @@ button {
   background: transparent;
 }
 
+.icon-button:hover,
+.icon-button:focus-visible {
+  color: #6556d7;
+  outline: 2px solid #7869df66;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 .icon-button svg {
   width: 19px;
   height: 19px;
+}
+
+.global-search {
+  width: min(260px, 42vw);
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid #30323c;
+  border-radius: 6px;
+  outline: none;
+  color: #e5e5eb;
+  background: #15171d;
+  font-size: 12px;
+}
+
+.global-search:focus {
+  border-color: #7869df;
+  box-shadow: 0 0 0 2px #7869df33;
 }
 
 .notification-button > span {
@@ -467,6 +532,32 @@ button {
   border-top: 1px solid #f1f2f6;
 }
 
+.dashboard-incident-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dashboard-incident-link:hover .incident-info strong,
+.dashboard-incident-link:focus-visible .incident-info strong,
+.dashboard-table-link:hover,
+.dashboard-table-link:focus-visible {
+  color: #b4aaff;
+  text-decoration: underline;
+}
+
+.dashboard-incident-link:focus-visible,
+.dashboard-table-link:focus-visible {
+  outline: 2px solid #7869df;
+  outline-offset: 2px;
+}
+
+.dashboard-table-link {
+  color: #b4aaff;
+  font-size: 10px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
 .incident-symbol {
   width: 30px;
   height: 30px;
@@ -610,6 +701,93 @@ button {
 
 .listing-panel {
   padding: 0 19px;
+}
+
+.equipment-summary {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.equipment-listing-panel {
+  padding: 18px 20px 0;
+}
+
+.equipment-listing-panel > .panel-heading {
+  min-height: auto;
+}
+
+.equipment-table {
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+.equipment-name-column { width: 28%; }
+.equipment-type-column { width: 17%; }
+.equipment-site-column { width: 17%; }
+.equipment-status-column { width: 17%; }
+.equipment-actions-column { width: 21%; }
+
+.equipment-table th,
+.equipment-table td {
+  padding: 0 12px;
+  vertical-align: middle;
+}
+
+.equipment-table th:first-child,
+.equipment-table td:first-child {
+  padding-left: 0;
+}
+
+.equipment-table th:last-child {
+  text-align: right;
+}
+
+.equipment-table tbody tr {
+  height: 58px;
+  transition: background-color 150ms ease;
+}
+
+.equipment-table tbody tr:hover {
+  background: #171922;
+}
+
+.equipment-table .row-actions {
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-action {
+  min-height: 29px;
+  padding: 0 8px;
+  border: 1px solid #30323c;
+  border-radius: 5px;
+  color: #c2baff;
+  background: #15171d;
+  font-size: 10px;
+}
+
+.table-action:hover:not(:disabled) {
+  border-color: #7869df;
+  background: #211e32;
+}
+
+.table-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.danger-action {
+  color: #f09189;
+}
+
+.danger-action:hover:not(:disabled) {
+  border-color: #a94e4e;
+  background: #321d20;
 }
 
 .listing-toolbar {
@@ -1003,7 +1181,8 @@ td,
 
 .search-field,
 .filter-button,
-.table-footer button {
+.table-footer button,
+.table-action {
   border-color: #30323c;
   background: #15171d;
   color: #c0c1ca;
@@ -1175,17 +1354,33 @@ td {
 }
 
 @media (max-width: 1050px) {
-  .incident-form {
+  .incident-form,
+  .entity-form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .equipment-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
-  .incident-form {
+  .incident-form,
+  .entity-form {
     grid-template-columns: 1fr;
   }
 
   .form-message {
     grid-column: auto;
+  }
+
+  .form-actions {
+    grid-column: auto;
+  }
+
+  .equipment-summary {
+    grid-template-columns: 1fr;
   }
 }

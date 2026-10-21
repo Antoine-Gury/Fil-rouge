@@ -1,3 +1,4 @@
+import { NavLink, useOutletContext } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingState, MetricCard, PageHeading, SectionTitle, StatusBadge } from '../components/ui'
 import { useApiData } from '../hooks/useApiData'
 import { getEquipments } from '../services/equipmentService'
@@ -23,8 +24,19 @@ const incidentStatusTones: Record<Incident['status'], 'danger' | 'warning' | 'su
 
 export default function Dashboard() {
   const { data, loading, error, reload } = useApiData(loadDashboard)
+  const searchQuery = useOutletContext<string>().trim().toLocaleLowerCase()
 
-  const openIncidents = data?.incidents.filter((incident) => incident.status !== 'resolved') ?? []
+  const equipments = data?.equipments.filter((equipment) =>
+    `${equipment.name} ${equipment.type} ${equipment.site} ${equipment.status}`.toLocaleLowerCase().includes(searchQuery),
+  ) ?? []
+  const equipmentNames = new Map(data?.equipments.map((equipment) => [equipment.id, equipment.name]))
+  const incidents = data?.incidents.filter((incident) =>
+    `${incident.title} ${incident.severity} ${incident.status} ${incident.equipmentId} ${equipmentNames.get(incident.equipmentId) ?? ''}`.toLocaleLowerCase().includes(searchQuery),
+  ) ?? []
+  const users = data?.users.filter((user) =>
+    `${user.name} ${user.email} ${user.role}`.toLocaleLowerCase().includes(searchQuery),
+  ) ?? []
+  const openIncidents = incidents.filter((incident) => incident.status !== 'resolved')
 
   return (
     <>
@@ -34,43 +46,43 @@ export default function Dashboard() {
       {data && (
         <>
           <section className="metrics-grid" aria-label="Indicateurs du parc">
-            <MetricCard label="Équipements" value={data.equipments.length} icon="box" color="purple" />
-            <MetricCard label="Incidents ouverts" value={openIncidents.length} icon="alert" color="orange" />
-            <MetricCard label="Utilisateurs" value={data.users.length} icon="users" color="blue" />
-            <MetricCard label="Équipements en ligne" value={data.equipments.filter((equipment) => equipment.status === 'online').length} icon="grid" color="green" />
+            <MetricCard label="Équipements" value={equipments.length} icon="box" color="purple" to="/equipements" />
+            <MetricCard label="Incidents ouverts" value={openIncidents.length} icon="alert" color="orange" to="/incidents" />
+            <MetricCard label="Utilisateurs" value={users.length} icon="users" color="blue" to="/utilisateurs" />
+            <MetricCard label="Équipements en ligne" value={equipments.filter((equipment) => equipment.status === 'online').length} icon="grid" color="green" to="/equipements" />
           </section>
           <section className="dashboard-grid">
             <div className="panel recent-panel">
               <SectionTitle title="Incidents récents" description="Incidents signalés dans le système" to="/incidents" linkLabel="Tous les incidents" />
-              {data.incidents.length === 0
-                ? <EmptyState message="Aucun incident enregistré." />
+              {incidents.length === 0
+                ? <EmptyState message={searchQuery ? 'Aucun incident ne correspond à la recherche.' : 'Aucun incident enregistré.'} />
                 : <div className="incident-list">
-                    {data.incidents.slice(0, 4).map((incident) => (
-                      <div className="incident-row" key={incident.id}>
+                    {incidents.slice(0, 4).map((incident) => (
+                      <NavLink className="incident-row dashboard-incident-link" key={incident.id} to="/incidents">
                         <div className="incident-info"><strong>{incident.title}</strong><span>Incident #{incident.id}</span></div>
                         <div className="incident-meta">
                           <StatusBadge tone={severityTones[incident.severity]}>{severityLabels[incident.severity]}</StatusBadge>
                           <span>{incidentStatusLabels[incident.status]}</span>
                         </div>
-                      </div>
+                      </NavLink>
                     ))}
                   </div>}
             </div>
             <div className="panel distribution-panel">
               <SectionTitle title="État des équipements" description="Disponibilité des équipements" to="/equipements" linkLabel="Voir la liste" />
               <div className="equipment-status-list">
-                <div><StatusBadge tone="success">En ligne</StatusBadge><strong>{data.equipments.filter((item) => item.status === 'online').length}</strong></div>
-                <div><StatusBadge tone="danger">Hors ligne</StatusBadge><strong>{data.equipments.filter((item) => item.status === 'offline').length}</strong></div>
+                <div><StatusBadge tone="success">En ligne</StatusBadge><strong>{equipments.filter((item) => item.status === 'online').length}</strong></div>
+                <div><StatusBadge tone="danger">Hors ligne</StatusBadge><strong>{equipments.filter((item) => item.status === 'offline').length}</strong></div>
               </div>
             </div>
           </section>
           <section className="panel equipment-panel">
             <SectionTitle title="Équipements" description="Équipements supervisés" to="/equipements" linkLabel="Tous les équipements" />
-            {data.equipments.length === 0
-              ? <EmptyState message="Aucun équipement enregistré." />
+            {equipments.length === 0
+              ? <EmptyState message={searchQuery ? 'Aucun équipement ne correspond à la recherche.' : 'Aucun équipement enregistré.'} />
               : <div className="table-scroll"><table><thead><tr><th>NOM</th><th>TYPE</th><th>SITE</th><th>STATUT</th></tr></thead>
-                  <tbody>{data.equipments.slice(0, 4).map((equipment) => (
-                    <tr key={equipment.id}><td className="table-primary">{equipment.name}</td><td>{equipment.type}</td><td>{equipment.site}</td><td><EquipmentStatus status={equipment.status} /></td></tr>
+                  <tbody>{equipments.slice(0, 4).map((equipment) => (
+                    <tr key={equipment.id}><td><NavLink className="dashboard-table-link" to="/equipements">{equipment.name}</NavLink></td><td>{equipment.type}</td><td>{equipment.site}</td><td><EquipmentStatus status={equipment.status} /></td></tr>
                   ))}</tbody>
                 </table></div>}
           </section>

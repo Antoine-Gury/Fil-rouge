@@ -1,17 +1,21 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { IconButton, Icon as SharedIcon } from './components/ui'
 import './App.css'
 
-const navigation = [
-  { to: '/', label: 'Tableau de bord', icon: 'grid', end: true },
-  { to: '/equipements', label: 'Équipements', icon: 'box', end: false },
-  { to: '/incidents', label: 'Incidents', icon: 'alert', end: false },
-  { to: '/utilisateurs', label: 'Utilisateurs', icon: 'users', end: false },
-]
-
 export function AppLayout() {
   const location = useLocation()
-  const currentPage = navigation.find(({ to, end }) => end ? location.pathname === to : location.pathname.startsWith(to))
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const currentPage = location.pathname === '/'
+    ? 'Tableau de bord'
+    : location.pathname === '/equipements' || location.pathname.startsWith('/equipements/')
+      ? 'Équipements'
+      : location.pathname === '/incidents' || location.pathname.startsWith('/incidents/')
+        ? 'Incidents'
+        : location.pathname === '/utilisateurs' || location.pathname.startsWith('/utilisateurs/')
+          ? 'Utilisateurs'
+          : 'Page introuvable'
 
   return (
     <div className="app-shell">
@@ -22,17 +26,22 @@ export function AppLayout() {
         </NavLink>
         <div className="workspace-label">ESPACE DE TRAVAIL</div>
         <nav className="primary-nav" aria-label="Navigation principale">
-          {navigation.map((page) => (
-            <NavLink
-              key={page.to}
-              end={page.end}
-              className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
-              to={page.to}
-            >
-              <SharedIcon name={page.icon} />
-              <span>{page.label}</span>
-            </NavLink>
-          ))}
+          <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} end to="/">
+            <SharedIcon name="grid" />
+            <span>Tableau de bord</span>
+          </NavLink>
+          <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} to="/equipements">
+            <SharedIcon name="box" />
+            <span>Équipements</span>
+          </NavLink>
+          <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} to="/incidents">
+            <SharedIcon name="alert" />
+            <span>Incidents</span>
+          </NavLink>
+          <NavLink className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`} to="/utilisateurs">
+            <SharedIcon name="users" />
+            <span>Utilisateurs</span>
+          </NavLink>
         </nav>
         <div className="sidebar-bottom">
           <div className="help-card">
@@ -44,10 +53,31 @@ export function AppLayout() {
       </aside>
       <main className="main-area">
         <header className="topbar">
-          <div className="breadcrumbs"><span>NexusOps</span><span>/</span><strong>{currentPage?.label ?? 'Page introuvable'}</strong></div>
-          <div className="topbar-actions"><IconButton name="search" label="Rechercher" /></div>
+          <div className="breadcrumbs"><span>NexusOps</span><span>/</span><strong>{currentPage}</strong></div>
+          <div className="topbar-actions">
+            {searchOpen && (
+              <input
+                className="global-search"
+                type="search"
+                aria-label="Rechercher dans les données"
+                placeholder="Rechercher…"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                autoFocus
+              />
+            )}
+            <IconButton
+              name="search"
+              label={searchOpen ? 'Fermer la recherche' : 'Ouvrir la recherche'}
+              expanded={searchOpen}
+              onClick={() => {
+                setSearchOpen((isOpen) => !isOpen)
+                if (searchOpen) setSearchQuery('')
+              }}
+            />
+          </div>
         </header>
-        <div className="page-content"><Outlet /></div>
+        <div className="page-content"><Outlet context={searchQuery} /></div>
       </main>
     </div>
   )

@@ -63,6 +63,12 @@
       "name": "Emma Robert",
       "email": "emma@nexusops.local",
       "role": "viewer"
+    },
+    {
+      "name": "lecoq baptou",
+      "email": "djbaptou@lapiraterienestjamaisfini.com",
+      "role": "admin",
+      "id": 4
     }
   ]
 }

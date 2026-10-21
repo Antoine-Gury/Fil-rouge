@@ -22,8 +22,8 @@ export function Icon({ name }: { name: string }) {
   )
 }
 
-export function IconButton({ name, label }: { name: string; label: string }) {
-  return <button type="button" className="icon-button" aria-label={label}><Icon name={name} /></button>
+export function IconButton({ name, label, onClick, expanded }: { name: string; label: string; onClick?: () => void; expanded?: boolean }) {
+  return <button type="button" className="icon-button" aria-label={label} aria-expanded={expanded} onClick={onClick}><Icon name={name} /></button>
 }
 
 export function PageHeading({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: ReactNode }) {
@@ -65,11 +65,13 @@ export function StatusBadge({ children, tone }: { children: string; tone: 'succe
   return <span className={`status status-${tone}`}><span />{children}</span>
 }
 
-export function MetricCard({ label, value, icon, color }: { label: string; value: number; icon: string; color: string }) {
-  return (
+export function MetricCard({ label, value, icon, color, to }: { label: string; value: number; icon: string; color: string; to?: string }) {
+  const content = (
     <article className="metric-card">
       <div className="metric-top"><span>{label}</span><span className={`metric-icon ${color}`}><Icon name={icon} /></span></div>
       <strong className="metric-value">{value}</strong>
     </article>
   )
+
+  return to ? <NavLink className="metric-link" to={to}>{content}</NavLink> : content
 }
