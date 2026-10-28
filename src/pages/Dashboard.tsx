@@ -4,6 +4,7 @@ import { getEquipments } from '../services/equipmentService'
 import { getIncidents } from '../services/incidentService'
 import { getUsers } from '../services/userService'
 import type { Equipment, Incident, User } from '../types'
+import { matchesSearch, useSearch } from '../contexts/SearchContext'
 
 interface DashboardData {
   equipments: Equipment[]
@@ -23,8 +24,23 @@ const incidentStatusTones: Record<Incident['status'], 'danger' | 'warning' | 'su
 
 export default function Dashboard() {
   const { data, loading, error, reload } = useApiData(loadDashboard)
+  const { query } = useSearch()
 
   const openIncidents = data?.incidents.filter((incident) => incident.status !== 'resolved') ?? []
+  const recentIncidents = data?.incidents.filter((incident) => matchesSearch(
+    query,
+    incident.title,
+    incident.id,
+    incident.status === 'open' ? 'Ouvert' : incident.status === 'in_progress' ? 'En cours' : 'Résolu',
+    incident.severity === 'high' ? 'Élevée' : incident.severity === 'medium' ? 'Moyenne' : 'Faible',
+  )) ?? []
+  const matchingEquipments = data?.equipments.filter((equipment) => matchesSearch(
+    query,
+    equipment.name,
+    equipment.type,
+    equipment.site,
+    equipment.status === 'online' ? 'En ligne' : 'Hors ligne',
+  )) ?? []
 
   return (
     <>
@@ -42,10 +58,10 @@ export default function Dashboard() {
           <section className="dashboard-grid">
             <div className="panel recent-panel">
               <SectionTitle title="Incidents récents" description="Incidents signalés dans le système" to="/incidents" linkLabel="Tous les incidents" />
-              {data.incidents.length === 0
-                ? <EmptyState message="Aucun incident enregistré." />
+              {recentIncidents.length === 0
+                ? <EmptyState message={query ? 'Aucun incident ne correspond à cette recherche.' : 'Aucun incident enregistré.'} />
                 : <div className="incident-list">
-                    {data.incidents.slice(0, 4).map((incident) => (
+                    {recentIncidents.slice(0, 4).map((incident) => (
                       <div className="incident-row" key={incident.id}>
                         <div className="incident-info"><strong>{incident.title}</strong><span>Incident #{incident.id}</span></div>
                         <div className="incident-meta">
@@ -66,10 +82,10 @@ export default function Dashboard() {
           </section>
           <section className="panel equipment-panel">
             <SectionTitle title="Équipements" description="Équipements supervisés" to="/equipements" linkLabel="Tous les équipements" />
-            {data.equipments.length === 0
-              ? <EmptyState message="Aucun équipement enregistré." />
+            {matchingEquipments.length === 0
+              ? <EmptyState message={query ? 'Aucun équipement ne correspond à cette recherche.' : 'Aucun équipement enregistré.'} />
               : <div className="table-scroll"><table><thead><tr><th>NOM</th><th>TYPE</th><th>SITE</th><th>STATUT</th></tr></thead>
-                  <tbody>{data.equipments.slice(0, 4).map((equipment) => (
+                  <tbody>{matchingEquipments.slice(0, 4).map((equipment) => (
                     <tr key={equipment.id}><td className="table-primary">{equipment.name}</td><td>{equipment.type}</td><td>{equipment.site}</td><td><EquipmentStatus status={equipment.status} /></td></tr>
                   ))}</tbody>
                 </table></div>}

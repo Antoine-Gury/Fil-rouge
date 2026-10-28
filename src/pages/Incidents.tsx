@@ -5,6 +5,7 @@ import { getEquipments } from '../services/equipmentService'
 import { createIncident, getIncidents } from '../services/incidentService'
 import type { IncidentSeverity } from '../types'
 import { IncidentSeverityBadge, IncidentStatusBadge } from './Dashboard'
+import { matchesSearch, useSearch } from '../contexts/SearchContext'
 
 export default function Incidents() {
   const { data, loading, error, reload } = useApiData(getIncidents)
@@ -37,6 +38,16 @@ export default function Incidents() {
   }
 
   const equipmentNames = new Map(equipmentState.data?.map((equipment) => [equipment.id, equipment.name]))
+  const { query } = useSearch()
+  const filtered = data?.filter((incident) => matchesSearch(
+    query,
+    incident.title,
+    incident.id,
+    equipmentNames.get(incident.equipmentId),
+    incident.severity === 'high' ? 'Élevée' : incident.severity === 'medium' ? 'Moyenne' : 'Faible',
+    incident.status === 'open' ? 'Ouvert' : incident.status === 'in_progress' ? 'En cours' : 'Résolu',
+    incident.equipmentId,
+  ))
 
   return (
     <>
@@ -71,10 +82,10 @@ export default function Incidents() {
         <div className="panel-heading"><div><h2>Incidents signalés</h2><p>Incidents reçus par NexusOps</p></div></div>
         {loading && <LoadingState />}
         {error && <ErrorState message={error} onRetry={reload} />}
-        {data && (data.length === 0
-          ? <EmptyState message="Aucun incident enregistré dans l’API." />
+        {filtered && (filtered.length === 0
+          ? <EmptyState message={query ? 'Aucun incident ne correspond à cette recherche.' : 'Aucun incident enregistré dans l’API.'} />
           : <div className="table-scroll"><table><thead><tr><th>TITRE</th><th>ÉQUIPEMENT</th><th>SÉVÉRITÉ</th><th>STATUT</th></tr></thead>
-              <tbody>{data.map((incident) => (
+              <tbody>{filtered.map((incident) => (
                 <tr key={incident.id}>
                   <td><span className="table-primary">{incident.title}</span><span className="table-secondary">Incident #{incident.id}</span></td>
                   <td>{equipmentNames.get(incident.equipmentId) ?? `Équipement #${incident.equipmentId}`}</td>
