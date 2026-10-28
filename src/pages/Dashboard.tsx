@@ -1,10 +1,11 @@
+import { NavLink } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingState, MetricCard, PageHeading, SectionTitle, StatusBadge } from '../components/ui'
+import { matchesSearch, useSearch } from '../contexts/SearchContext'
 import { useApiData } from '../hooks/useApiData'
 import { getEquipments } from '../services/equipmentService'
 import { getIncidents } from '../services/incidentService'
 import { getUsers } from '../services/userService'
 import type { Equipment, Incident, User } from '../types'
-import { matchesSearch, useSearch } from '../contexts/SearchContext'
 
 interface DashboardData {
   equipments: Equipment[]
@@ -14,7 +15,7 @@ interface DashboardData {
 
 function loadDashboard() {
   return Promise.all([getEquipments(), getIncidents(), getUsers()])
-  .then(([equipments, incidents, users]): DashboardData => ({ equipments, incidents, users }))
+    .then(([equipments, incidents, users]): DashboardData => ({ equipments, incidents, users }))
 }
 
 const severityLabels: Record<Incident['severity'], string> = { high: 'Élevée', medium: 'Moyenne', low: 'Faible' }
@@ -25,22 +26,17 @@ const incidentStatusTones: Record<Incident['status'], 'danger' | 'warning' | 'su
 export default function Dashboard() {
   const { data, loading, error, reload } = useApiData(loadDashboard)
   const { query } = useSearch()
-
-  const openIncidents = data?.incidents.filter((incident) => incident.status !== 'resolved') ?? []
-  const recentIncidents = data?.incidents.filter((incident) => matchesSearch(
-    query,
-    incident.title,
-    incident.id,
-    incident.status === 'open' ? 'Ouvert' : incident.status === 'in_progress' ? 'En cours' : 'Résolu',
-    incident.severity === 'high' ? 'Élevée' : incident.severity === 'medium' ? 'Moyenne' : 'Faible',
-  )) ?? []
-  const matchingEquipments = data?.equipments.filter((equipment) => matchesSearch(
-    query,
-    equipment.name,
-    equipment.type,
-    equipment.site,
+  const filteredEquipments = data?.equipments.filter((equipment) => matchesSearch(
+    query, equipment.name, equipment.type, equipment.site,
     equipment.status === 'online' ? 'En ligne' : 'Hors ligne',
   )) ?? []
+  const equipmentNames = new Map(data?.equipments.map((equipment) => [equipment.id, equipment.name]))
+  const filteredIncidents = data?.incidents.filter((incident) => matchesSearch(
+    query, incident.title, incident.id, equipmentNames.get(incident.equipmentId),
+    severityLabels[incident.severity], incidentStatusLabels[incident.status],
+  )) ?? []
+  const filteredUsers = data?.users.filter((user) => matchesSearch(query, user.name, user.email, user.role)) ?? []
+  const openIncidents = filteredIncidents.filter((incident) => incident.status !== 'resolved')
 
   return (
     <>
@@ -50,43 +46,43 @@ export default function Dashboard() {
       {data && (
         <>
           <section className="metrics-grid" aria-label="Indicateurs du parc">
-            <MetricCard label="Équipements" value={data.equipments.length} icon="box" color="purple" />
-            <MetricCard label="Incidents ouverts" value={openIncidents.length} icon="alert" color="orange" />
-            <MetricCard label="Utilisateurs" value={data.users.length} icon="users" color="blue" />
-            <MetricCard label="Équipements en ligne" value={data.equipments.filter((equipment) => equipment.status === 'online').length} icon="grid" color="green" />
+            <MetricCard label="Équipements" value={filteredEquipments.length} icon="box" color="purple" to="/equipements" />
+            <MetricCard label="Incidents ouverts" value={openIncidents.length} icon="alert" color="orange" to="/incidents" />
+            <MetricCard label="Utilisateurs" value={filteredUsers.length} icon="users" color="blue" to="/utilisateurs" />
+            <MetricCard label="Équipements en ligne" value={filteredEquipments.filter((equipment) => equipment.status === 'online').length} icon="grid" color="green" to="/equipements" />
           </section>
           <section className="dashboard-grid">
             <div className="panel recent-panel">
               <SectionTitle title="Incidents récents" description="Incidents signalés dans le système" to="/incidents" linkLabel="Tous les incidents" />
-              {recentIncidents.length === 0
+              {filteredIncidents.length === 0
                 ? <EmptyState message={query ? 'Aucun incident ne correspond à cette recherche.' : 'Aucun incident enregistré.'} />
                 : <div className="incident-list">
-                    {recentIncidents.slice(0, 4).map((incident) => (
-                      <div className="incident-row" key={incident.id}>
+                    {filteredIncidents.slice(0, 4).map((incident) => (
+                      <NavLink className="incident-row dashboard-incident-link" key={incident.id} to="/incidents">
                         <div className="incident-info"><strong>{incident.title}</strong><span>Incident #{incident.id}</span></div>
                         <div className="incident-meta">
                           <StatusBadge tone={severityTones[incident.severity]}>{severityLabels[incident.severity]}</StatusBadge>
                           <span>{incidentStatusLabels[incident.status]}</span>
                         </div>
-                      </div>
+                      </NavLink>
                     ))}
                   </div>}
             </div>
             <div className="panel distribution-panel">
               <SectionTitle title="État des équipements" description="Disponibilité des équipements" to="/equipements" linkLabel="Voir la liste" />
               <div className="equipment-status-list">
-                <div><StatusBadge tone="success">En ligne</StatusBadge><strong>{data.equipments.filter((item) => item.status === 'online').length}</strong></div>
-                <div><StatusBadge tone="danger">Hors ligne</StatusBadge><strong>{data.equipments.filter((item) => item.status === 'offline').length}</strong></div>
+                <div><StatusBadge tone="success">En ligne</StatusBadge><strong>{filteredEquipments.filter((item) => item.status === 'online').length}</strong></div>
+                <div><StatusBadge tone="danger">Hors ligne</StatusBadge><strong>{filteredEquipments.filter((item) => item.status === 'offline').length}</strong></div>
               </div>
             </div>
           </section>
           <section className="panel equipment-panel">
             <SectionTitle title="Équipements" description="Équipements supervisés" to="/equipements" linkLabel="Tous les équipements" />
-            {matchingEquipments.length === 0
+            {filteredEquipments.length === 0
               ? <EmptyState message={query ? 'Aucun équipement ne correspond à cette recherche.' : 'Aucun équipement enregistré.'} />
               : <div className="table-scroll"><table><thead><tr><th>NOM</th><th>TYPE</th><th>SITE</th><th>STATUT</th></tr></thead>
-                  <tbody>{matchingEquipments.slice(0, 4).map((equipment) => (
-                    <tr key={equipment.id}><td className="table-primary">{equipment.name}</td><td>{equipment.type}</td><td>{equipment.site}</td><td><EquipmentStatus status={equipment.status} /></td></tr>
+                  <tbody>{filteredEquipments.slice(0, 4).map((equipment) => (
+                    <tr key={equipment.id}><td><NavLink className="dashboard-table-link" to="/equipements">{equipment.name}</NavLink></td><td>{equipment.type}</td><td>{equipment.site}</td><td><EquipmentStatus status={equipment.status} /></td></tr>
                   ))}</tbody>
                 </table></div>}
           </section>

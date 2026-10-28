@@ -11,3 +11,14 @@ export function createIncident(incident: NewIncident) {
     body: JSON.stringify(incident),
   })
 }
+
+export function updateIncident(id: number, incident: NewIncident) {
+  return request<Incident>(`incidents/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(incident),
+  })
+}
+
+export function deleteIncident(id: number) {
+  return request<void>(`incidents/${id}`, { method: 'DELETE' })
+}

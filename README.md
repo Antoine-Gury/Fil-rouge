@@ -61,9 +61,11 @@ Ouvrir l’URL affichée par Vite (par défaut `http://localhost:5173`).
 - `/utilisateurs` : liste des utilisateurs, e-mails et rôles.
 - `/admin` : administration des comptes, équipements et incidents (rôle `admin` requis).
 
-La barre de recherche du bandeau filtre les incidents, équipements et utilisateurs affichés sur la page en cours. La page `/login` permet de créer un compte ou de se connecter avec un compte enregistré dans MySQL.
+La barre de recherche du bandeau filtre les résultats affichés sur la page en cours. La page `/login` permet de créer un compte ou de se connecter avec un compte enregistré dans MySQL.
 
-Les vues affichent un chargement pendant les requêtes, un message explicite et une action de nouvelle tentative en cas d’erreur. Le formulaire d’incident envoie un `POST /incidents` ; json-server conserve la création dans `db.json`.
+Les pages Équipements et Incidents permettent de créer, modifier et supprimer leurs entrées ; une confirmation est demandée avant chaque suppression. Les comptes visibles dans Utilisateurs proviennent de MySQL et leur gestion est réservée au panel `/admin`.
+
+Les vues affichent un chargement pendant les requêtes, un message explicite et une action de nouvelle tentative en cas d’erreur. Les données de supervision sont enregistrées par json-server dans `db.json`.
 
 ## Vérifications
 

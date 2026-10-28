@@ -19,5 +19,9 @@ export async function request<T>(resource: string, init?: RequestInit): Promise<
     throw new Error(`L’API a répondu avec une erreur (${response.status} ${response.statusText}).`)
   }
 
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T
+  }
+
   return response.json() as Promise<T>
 }
